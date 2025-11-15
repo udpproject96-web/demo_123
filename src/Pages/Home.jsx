@@ -17,7 +17,7 @@ const Home = () => {
   const [price, setPrice] = useState("des");
   const [total, setTotal] = useState("des");
   const [single, setSingle] = useState({});
-  const [view, setView] = useState("card");
+  const [view, setView] = useState("card"); // default card view
 
   const { register, handleSubmit, reset } = useForm();
 
@@ -30,7 +30,6 @@ const Home = () => {
     fetchData();
   }, []);
 
-  // Delete Product
   async function trashProduct(id) {
     if (confirm("Do you want delete product")) {
       await axios.delete(`${import.meta.env.VITE_API_URL}/Products/${id}`);
@@ -45,20 +44,17 @@ const Home = () => {
     }
   }
 
-  // Fetch Single Product for Edit
   async function SingleProduct(id) {
     const res = await axios.get(`${import.meta.env.VITE_API_URL}/Products/${id}`);
     setSingle(res.data);
     reset(res.data);
   }
 
-  // Update Product
   async function editProduct(data) {
     await axios.put(`${import.meta.env.VITE_API_URL}/Products/${single.id}`, data);
     location.reload();
   }
 
-  // Sorting
   function sortPrice(order) {
     const sorted = [...product].sort((a, b) =>
       order === "asc" ? a.price - b.price : b.price - a.price
@@ -88,7 +84,7 @@ const Home = () => {
           </button>
         </Link>
 
-        {/* Desktop Toggle */}
+        {/* Desktop View Toggle */}
         <div className="mt-4 d-none d-md-flex justify-content-center">
           <div className="btn-group">
             <button
@@ -107,7 +103,7 @@ const Home = () => {
           </div>
         </div>
 
-        {/* CARD VIEW (mobile & desktop) */}
+        {/* CARD VIEW */}
         {view === "card" && (
           <div className="row g-4 mt-5 justify-content-center">
             {product.map((ele, index) => (
@@ -121,26 +117,25 @@ const Home = () => {
                   <p className="product-desc">{ele.description.slice(0, 50)}...</p>
                 </div>
 
-                <div className="product-buttons btn-group w-100">
-                  <button className="btn btn-primary"
-                    onClick={() => navigate(`/single-product/${ele.id}`)}>
+                <div className="btn-group w-100">
+                  <button className="btn btn-primary" onClick={() => navigate(`/single-product/${ele.id}`)}>
                     <GrOverview />
                   </button>
 
-                  <button className="btn btn-danger"
-                    onClick={() => trashProduct(ele.id)}>
+                  <button className="btn btn-danger" onClick={() => trashProduct(ele.id)}>
                     <MdDelete />
                   </button>
 
-                  <button className="btn btn-warning"
+                  <button
+                    className="btn btn-warning"
                     data-bs-toggle="modal"
                     data-bs-target="#exampleModal"
-                    onClick={() => SingleProduct(ele.id)}>
+                    onClick={() => SingleProduct(ele.id)}
+                  >
                     <VscEditorLayout />
                   </button>
 
-                  <button className="btn btn-info"
-                    onClick={() => navigate(`/addProduct/${ele.id}`)}>
+                  <button className="btn btn-info" onClick={() => navigate(`/addProduct/${ele.id}`)}>
                     <RiEdit2Fill />
                   </button>
                 </div>
@@ -149,7 +144,7 @@ const Home = () => {
           </div>
         )}
 
-        {/* TABLE VIEW (desktop only) */}
+        {/* TABLE VIEW */}
         {view === "table" && (
           <div className="table-responsive mt-5 d-none d-md-block">
             <table className="table table-striped table-bordered">
@@ -166,6 +161,7 @@ const Home = () => {
                       <button className="sort-btn" onClick={() => sortPrice("des")}>↑</button>
                     )}
                   </th>
+
                   <th>
                     Total
                     {total === "des" ? (
@@ -174,6 +170,7 @@ const Home = () => {
                       <button className="sort-btn" onClick={() => sortTotal("des")}>↑</button>
                     )}
                   </th>
+
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -186,24 +183,23 @@ const Home = () => {
                     <td>{ele.product_name}</td>
                     <td>$ {ele.price}</td>
                     <td>{ele.total}</td>
+
                     <td>
                       <div className="btn-group">
-                        <button className="btn btn-primary"
-                          onClick={() => navigate(`/single-product/${ele.id}`)}>
+                        <button className="btn btn-primary" onClick={() => navigate(`/single-product/${ele.id}`)}>
                           <GrOverview />
                         </button>
 
-                        <button className="btn btn-info"
-                          onClick={() => navigate(`/addProduct/${ele.id}`)}>
+                        <button className="btn btn-info" onClick={() => navigate(`/addProduct/${ele.id}`)}>
                           <RiEdit2Fill />
                         </button>
 
-                        <button className="btn btn-danger"
-                          onClick={() => trashProduct(ele.id)}>
+                        <button className="btn btn-danger" onClick={() => trashProduct(ele.id)}>
                           <MdDelete />
                         </button>
                       </div>
                     </td>
+
                   </tr>
                 ))}
               </tbody>
@@ -252,9 +248,8 @@ const Home = () => {
 
       <ToastContainer transition={Bounce} theme="dark" />
 
-      {/* CSS INCLUDED BELOW */}
-      <style>
-        {/* PRODUCT CARD */}
+      {/* INLINE CSS FIXED: MUST BE A STRING */}
+      <style>{`
         .product-card {
           border: 1px solid #ddd;
           border-radius: 12px;
@@ -270,22 +265,19 @@ const Home = () => {
           box-shadow: 0 6px 14px rgba(0,0,0,0.12);
         }
 
-        {/* IMAGE */}
         .product-img {
           width: 100%;
           height: 220px;
           object-fit: cover;
         }
 
-        {/* INFO */}
         .product-info {
           padding: 12px;
         }
 
         .product-title {
-          text-transform: capitalize;
           font-weight: 600;
-          margin-bottom: 4px;
+          text-transform: capitalize;
         }
 
         .product-category {
@@ -295,17 +287,15 @@ const Home = () => {
 
         .product-price {
           color: green;
-          font-weight: bold;
           font-size: 18px;
-          margin: 6px 0;
+          font-weight: bold;
         }
 
         .product-desc {
-          color: #666;
           font-size: 13px;
+          color: #666;
         }
 
-        {/* TABLE IMAGE */}
         .table-img {
           width: 70px;
           height: 70px;
@@ -313,26 +303,20 @@ const Home = () => {
           border-radius: 6px;
         }
 
-        {/* SORT BUTTON */}
         .sort-btn {
           background: transparent;
           border: none;
+          cursor: pointer;
           font-size: 18px;
           margin-left: 6px;
-          cursor: pointer;
         }
 
-        {/* MOBILE VIEW FIXES */}
         @media (max-width: 576px) {
           .product-img {
             height: 180px;
           }
-
-          .product-price {
-            font-size: 16px;
-          }
         }
-      </style>
+      `}</style>
     </>
   );
 };
