@@ -7,498 +7,332 @@ import { VscEditorLayout } from "react-icons/vsc";
 import { RiEdit2Fill } from "react-icons/ri";
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import { useForm } from "react-hook-form";
-// import { Modal } from "bootstrap/dist/js/bootstrap.min";
+
 import Footer from "../Component/Footer";
 import Header from "../Component/Header";
-import "../assets/css/header.css";
-import { FaTableCells } from "react-icons/fa6";
-import { IoIdCardSharp } from "react-icons/io5";
-import { FaLongArrowAltUp, FaLongArrowAltDown } from "react-icons/fa";
+
 const Home = () => {
   const navigate = useNavigate();
   const [product, setProduct] = useState([]);
   const [price, setPrice] = useState("des");
   const [total, setTotal] = useState("des");
   const [single, setSingle] = useState({});
+  const [view, setView] = useState("card");
 
   const { register, handleSubmit, reset } = useForm();
 
-  //   Function for Fetch All Products
   async function fetchData() {
-    const ProductData = await axios.get(
-      `${import.meta.env.VITE_API_URL}/Products`
-    );
+    const ProductData = await axios.get(`${import.meta.env.VITE_API_URL}/Products`);
     setProduct(ProductData.data);
   }
 
   useEffect(() => {
-    document.querySelector(".tableView").style.display = "none";
     fetchData();
   }, []);
 
-  //   Function For Delete Products
+  // Delete Product
   async function trashProduct(id) {
     if (confirm("Do you want delete product")) {
       await axios.delete(`${import.meta.env.VITE_API_URL}/Products/${id}`);
-      const UpdatedProduct = product.filter((ele) => {
-        return ele.id !== id;
-      });
-      setProduct(UpdatedProduct);
-      const notify = () =>
-        toast.error("Product Deleted..!", {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "dark",
-          transition: Bounce,
-        });
+      setProduct((prev) => prev.filter((item) => item.id !== id));
 
-      notify();
+      toast.error("Product Deleted!", {
+        position: "top-right",
+        autoClose: 2000,
+        theme: "dark",
+        transition: Bounce,
+      });
     }
   }
 
-  //Function for Fetch Single Produst and Send to Form
+  // Fetch Single Product for Edit
   async function SingleProduct(id) {
-    const res = await axios.get(
-      `${import.meta.env.VITE_API_URL}/Products/${id}`
-    );
+    const res = await axios.get(`${import.meta.env.VITE_API_URL}/Products/${id}`);
     setSingle(res.data);
     reset(res.data);
   }
 
-  //Function for Update Product in Modal
+  // Update Product
   async function editProduct(data) {
-    await axios
-      .put(`${import.meta.env.VITE_API_URL}/Products/${single.id}`, data)
-      .then((res) => {
-        window.location.reload();
-        toast.success("Product Deleted..!");
-      })
-      .catch((err) => console.log(err));
+    await axios.put(`${import.meta.env.VITE_API_URL}/Products/${single.id}`, data);
+    location.reload();
   }
 
-  // Function sort base Price
+  // Sorting
   function sortPrice(order) {
-    const SortedPrice = product.sort((a, b) => {
-      if (order == "asc") {
-        return a.price - b.price;
-      } else {
-        return b.price - a.price;
-      }
-    });
-
-    setProduct(SortedPrice);
+    const sorted = [...product].sort((a, b) =>
+      order === "asc" ? a.price - b.price : b.price - a.price
+    );
+    setProduct(sorted);
     setPrice(order);
   }
 
   function sortTotal(order) {
-    const SortedTotal = product.sort((a, b) => {
-      if (order == "asc") {
-        return a.total - b.total;
-      } else {
-        return b.total - a.total;
-      }
-    });
-
-    setProduct(SortedTotal);
+    const sorted = [...product].sort((a, b) =>
+      order === "asc" ? a.total - b.total : b.total - a.total
+    );
+    setProduct(sorted);
     setTotal(order);
-  }
-
-  // Show data  in Table or Card View
-  function show(name) {
-    if (name == "table") {
-      document.querySelector(".tableView").style.display = "";
-      document.querySelector(".cardView").style.display = "none";
-
-      // Bg-color add
-      document.querySelector(".cardBtn").classList.add("bg-secondary");
-      document.querySelector(".tableBtn").classList.add("bg-dark");
-      // Bg-color remove
-      document.querySelector(".cardBtn").classList.remove("bg-dark");
-      document.querySelector(".tableBtn").classList.remove("bg-secondary");
-    } else {
-      document.querySelector(".tableView").style.display = "none";
-      document.querySelector(".cardView").style.display = "flex";
-
-      // Bg-color add
-      document.querySelector(".cardBtn").classList.add("bg-dark");
-      document.querySelector(".tableBtn").classList.add("bg-secondary");
-      // Bg-color remove
-      document.querySelector(".cardBtn").classList.remove("bg-secondary");
-      document.querySelector(".tableBtn").classList.remove("bg-dark");
-    }
   }
 
   return (
     <>
-      {/* Header */}
       <Header />
-      {/* End Header */}
 
       <div className="container p-0">
-        {/* Buttonn for Add Product */}
+
+        {/* Add Product */}
         <Link to="addProduct">
           <button className="btn btn-primary mt-5 w-100 py-2 fs-4">
             Add Product
           </button>
         </Link>
-        {/* Buttonn for Add Product */}
 
-        {/* Toggle Button for Table view or Card View */}
-        <div>
-          <div className="btn-group mt-5">
+        {/* Desktop Toggle */}
+        <div className="mt-4 d-none d-md-flex justify-content-center">
+          <div className="btn-group">
             <button
-              className="tableBtn btn btn-secondary"
-              onClick={() => {
-                show("table");
-              }}
-              data-toggle="tooltip"
-              data-placement="top"
-              title="Show Table View"
+              className={`btn ${view === "table" ? "btn-dark" : "btn-secondary"}`}
+              onClick={() => setView("table")}
             >
-              <FaTableCells />
+              <VscEditorLayout /> Table
             </button>
+
             <button
-              className="cardBtn btn btn-dark"
-              onClick={() => {
-                show("card");
-              }}
-              data-toggle="tooltip"
-              data-placement="top"
-              title="Show Card View"
+              className={`btn ${view === "card" ? "btn-dark" : "btn-secondary"}`}
+              onClick={() => setView("card")}
             >
-              <IoIdCardSharp />
+              <GrOverview /> Cards
             </button>
           </div>
         </div>
-        {/* Toggle Button for Table view or Card View */}
 
-        {/* Card View */}
-        <div className="cardView row g-4 mt-5 justify-content-center">
-          {product.map((ele, index) => (
-            <div
-              className="col-5 col-sm-5 col-md-4 col-lg-3 border border-1 shadow p-0 mb-4 rounded-3"
-              key={index}
-            >
-              <img
-                src={ele.image}
-                alt=""
-                width="100%"
-                height={250}
-                className="rounded-3"
-              />
-              <div className="card-body px-2">
-                <h3
-                  className="text-capitalize overflow-hidden"
-                  style={{ height: "40px" }}
-                >
-                  name : {ele.product_name}
-                </h3>
-                <p className="text-capitalize">category : {ele.category}</p>
-                <p className="text-capitalize">price : {ele.price}</p>
-                <p
-                  className="text-capitalize overflow-hidden"
-                  style={{ height: "40px" }}
-                >
-                  desc : {ele.description}
-                </p>
-              </div>
-              <div className="btn-group w-100">
-                <button
-                  className="btn btn-primary"
-                  data-toggle="tooltip"
-                  data-placement="top"
-                  title="See More Detail"
-                  onClick={() => navigate(`/single-product/${ele.id}`)}
-                >
-                  <GrOverview />
-                </button>
-                <button
-                  className="btn btn-danger"
-                  data-toggle="tooltip"
-                  data-placement="top"
-                  title="Delete Product"
-                  data-bs-toggle="modal"
-                  onClick={() => {
-                    trashProduct(ele.id);
-                  }}
-                  //   data-bs-target="#deletemodal"
-                >
-                  <MdDelete />
-                </button>
-                <button
-                  className="btn btn-warning"
-                  data-toggle="tooltip"
-                  data-placement="top"
-                  title="Edit Product"
-                  data-bs-toggle="modal"
-                  data-bs-target="#exampleModal"
-                  onClick={() => {
-                    SingleProduct(ele.id);
-                  }}
-                >
-                  <VscEditorLayout />
-                </button>
-                <button
-                  className="btn btn-info"
-                  data-toggle="tooltip"
-                  data-placement="top"
-                  title="Edit Product"
-                  onClick={() => {
-                    navigate(`/addProduct/${ele.id}`);
-                  }}
-                >
-                  <RiEdit2Fill />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-        {/* End Card View */}
+        {/* CARD VIEW (mobile & desktop) */}
+        {view === "card" && (
+          <div className="row g-4 mt-5 justify-content-center">
+            {product.map((ele, index) => (
+              <div className="product-card col-12 col-sm-6 col-md-4 col-lg-3" key={index}>
+                <img src={ele.image} className="product-img" alt="" />
 
-        {/* Table View */}
-        <div className="tableDiv w-100 mt-5">
-          <table className="tableView table w-100">
-            <thead>
-              <tr>
-                <th className="text-capitalize">sr.no</th>
-                <th className="text-capitalize">product image</th>
-                <th className="text-capitalize">product name</th>
-                <th className="text-capitalize">
-                  price ($)
-                  {price == "des" ? (
-                    <button
-                      className="btn bg-transparent p-0"
-                      onClick={() => {
-                        sortPrice("asc");
-                      }}
-                    >
-                      <FaLongArrowAltDown />
-                    </button>
-                  ) : (
-                    <button
-                      className="btn bg-transparent p-0"
-                      onClick={() => {
-                        sortPrice("des");
-                      }}
-                    >
-                      <FaLongArrowAltUp />
-                    </button>
-                  )}
-                </th>
-                <th className="text-capitalize">
-                  total product
-                  {total == "des" ? (
-                    <button
-                      className="btn bg-transparent p-0"
-                      onClick={() => {
-                        sortTotal("asc");
-                      }}
-                    >
-                      <FaLongArrowAltDown />
-                    </button>
-                  ) : (
-                    <button
-                      className="btn bg-transparent p-0"
-                      onClick={() => {
-                        sortTotal("des");
-                      }}
-                    >
-                      <FaLongArrowAltUp />
-                    </button>
-                  )}
-                </th>
-                <th className="text-capitalize">actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {product.map((ele, index) => (
+                <div className="product-info">
+                  <h5 className="product-title">{ele.product_name}</h5>
+                  <p className="product-category">Category: {ele.category}</p>
+                  <p className="product-price">$ {ele.price}</p>
+                  <p className="product-desc">{ele.description.slice(0, 50)}...</p>
+                </div>
+
+                <div className="product-buttons btn-group w-100">
+                  <button className="btn btn-primary"
+                    onClick={() => navigate(`/single-product/${ele.id}`)}>
+                    <GrOverview />
+                  </button>
+
+                  <button className="btn btn-danger"
+                    onClick={() => trashProduct(ele.id)}>
+                    <MdDelete />
+                  </button>
+
+                  <button className="btn btn-warning"
+                    data-bs-toggle="modal"
+                    data-bs-target="#exampleModal"
+                    onClick={() => SingleProduct(ele.id)}>
+                    <VscEditorLayout />
+                  </button>
+
+                  <button className="btn btn-info"
+                    onClick={() => navigate(`/addProduct/${ele.id}`)}>
+                    <RiEdit2Fill />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* TABLE VIEW (desktop only) */}
+        {view === "table" && (
+          <div className="table-responsive mt-5 d-none d-md-block">
+            <table className="table table-striped table-bordered">
+              <thead>
                 <tr>
-                  <td>{index + 1}</td>
-                  <td>
-                    <img src={ele.image} alt="" width={70} height={70} />
-                  </td>
-                  <td className="text-capitalize">{ele.product_name}</td>
-                  <td className="text-info fw-bolder">$ {ele.price}</td>
-                  <td>{ele.total}</td>
-                  <td>
-                    <div className="btn-group">
-                      <button className="btn btn-primary" onClick={() => navigate(`/single-product/${ele.id}`)}>
-                        <GrOverview />
-                      </button>
-                      <button className="btn btn-info">
-                        <RiEdit2Fill />
-                      </button>
-                      <button className="btn btn-danger" onClick={() => {trashProduct(ele.id);}}>
-                        <MdDelete />
-                      </button>
-                    </div>
-                  </td>
+                  <th>Sr.no</th>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>
+                    Price
+                    {price === "des" ? (
+                      <button className="sort-btn" onClick={() => sortPrice("asc")}>↓</button>
+                    ) : (
+                      <button className="sort-btn" onClick={() => sortPrice("des")}>↑</button>
+                    )}
+                  </th>
+                  <th>
+                    Total
+                    {total === "des" ? (
+                      <button className="sort-btn" onClick={() => sortTotal("asc")}>↓</button>
+                    ) : (
+                      <button className="sort-btn" onClick={() => sortTotal("des")}>↑</button>
+                    )}
+                  </th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {/* End Table View */}
+              </thead>
+
+              <tbody>
+                {product.map((ele, index) => (
+                  <tr key={ele.id}>
+                    <td>{index + 1}</td>
+                    <td><img src={ele.image} className="table-img" /></td>
+                    <td>{ele.product_name}</td>
+                    <td>$ {ele.price}</td>
+                    <td>{ele.total}</td>
+                    <td>
+                      <div className="btn-group">
+                        <button className="btn btn-primary"
+                          onClick={() => navigate(`/single-product/${ele.id}`)}>
+                          <GrOverview />
+                        </button>
+
+                        <button className="btn btn-info"
+                          onClick={() => navigate(`/addProduct/${ele.id}`)}>
+                          <RiEdit2Fill />
+                        </button>
+
+                        <button className="btn btn-danger"
+                          onClick={() => trashProduct(ele.id)}>
+                          <MdDelete />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+
+            </table>
+          </div>
+        )}
+
+        <Footer />
       </div>
 
-      <Footer />
-
-      {/* Modal */}
-      <div
-        className="modal fade"
-        id="exampleModal"
-        tabindex="-1"
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-        data-bs-backdrop="static"
-      >
+      {/* EDIT MODAL */}
+      <div className="modal fade" id="exampleModal" tabIndex="-1" data-bs-backdrop="static">
         <div className="modal-dialog">
           <div className="modal-content">
-            <div className="modal-header">
-              <h1 className="modal-title fs-5" id="exampleModalLabel">
-                Edit Product
-              </h1>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              ></button>
-            </div>
-            <div className="modal-body">
-              <form action="" onSubmit={handleSubmit(editProduct)}>
-                <label htmlFor="image" className="form-label text-capitalize">
-                  Product image/URl
-                </label>
-                <input
-                  type="text"
-                  className="form-control mb-2"
-                  {...register("image")}
-                  id="image"
-                />
-                <label htmlFor="name" className="form-label text-capitalize">
-                  Product name
-                </label>
-                <input
-                  type="text"
-                  className="form-control mb-2"
-                  {...register("product_name")}
-                  id="name"
-                />
-                <label htmlFor="price" className="form-label text-capitalize">
-                  Product price
-                </label>
-                <input
-                  type="text"
-                  className="form-control mb-2"
-                  {...register("price")}
-                  id="price"
-                />
-                <label htmlFor="total" className="form-label text-capitalize">
-                  total Product
-                </label>
-                <input
-                  type="text"
-                  className="form-control mb-2"
-                  {...register("total")}
-                  id="total"
-                />
-                <label
-                  htmlFor="description"
-                  className="form-label text-capitalize"
-                >
-                  description
-                </label>
-                <textarea
-                  type="text"
-                  className="form-control mb-2"
-                  {...register("description")}
-                  id="description"
-                />
+            <form onSubmit={handleSubmit(editProduct)}>
+              <div className="modal-header">
+                <h5>Edit Product</h5>
+                <button className="btn-close" type="button" data-bs-dismiss="modal"></button>
+              </div>
 
-                <button className="btn btn-primary w-100">Save changes</button>
-              </form>
-            </div>
-            {/* <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Close
-              </button>
-            </div> */}
+              <div className="modal-body">
+                <label>Image URL</label>
+                <input className="form-control mb-2" {...register("image")} />
+
+                <label>Product Name</label>
+                <input className="form-control mb-2" {...register("product_name")} />
+
+                <label>Price</label>
+                <input className="form-control mb-2" {...register("price")} />
+
+                <label>Total</label>
+                <input className="form-control mb-2" {...register("total")} />
+
+                <label>Description</label>
+                <textarea className="form-control" {...register("description")} />
+              </div>
+
+              <div className="modal-footer">
+                <button className="btn btn-primary w-100">Save Changes</button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
 
-      {/* <!--Delet Modal --> */}
-      <div
-        className="modal fade"
-        id="deletemodal"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1"
-        aria-labelledby="staticBackdropLabel"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h1 className="modal-title fs-5" id="staticBackdropLabel">
-                Delete Product
-              </h1>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              ></button>
-            </div>
-            <div className="modal-body">
-              <p>are you sure to delete this product...?</p>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary text-capitalize"
-                data-bs-dismiss="modal"
-              >
-                cancle
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={() => {
-                  trashProduct(ele.id);
-                }}
-              >
-                Comfirm Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ToastContainer transition={Bounce} theme="dark" />
 
-      {/* Tostify */}
-      <ToastContainer
-        position="top-right"
-        autoClose={4000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-        transition={Bounce}
-      />
+      {/* CSS INCLUDED BELOW */}
+      <style>
+        {/* PRODUCT CARD */}
+        .product-card {
+          border: 1px solid #ddd;
+          border-radius: 12px;
+          padding: 0;
+          overflow: hidden;
+          background: #fff;
+          transition: 0.3s;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+
+        .product-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+        }
+
+        {/* IMAGE */}
+        .product-img {
+          width: 100%;
+          height: 220px;
+          object-fit: cover;
+        }
+
+        {/* INFO */}
+        .product-info {
+          padding: 12px;
+        }
+
+        .product-title {
+          text-transform: capitalize;
+          font-weight: 600;
+          margin-bottom: 4px;
+        }
+
+        .product-category {
+          font-size: 13px;
+          color: #777;
+        }
+
+        .product-price {
+          color: green;
+          font-weight: bold;
+          font-size: 18px;
+          margin: 6px 0;
+        }
+
+        .product-desc {
+          color: #666;
+          font-size: 13px;
+        }
+
+        {/* TABLE IMAGE */}
+        .table-img {
+          width: 70px;
+          height: 70px;
+          object-fit: cover;
+          border-radius: 6px;
+        }
+
+        {/* SORT BUTTON */}
+        .sort-btn {
+          background: transparent;
+          border: none;
+          font-size: 18px;
+          margin-left: 6px;
+          cursor: pointer;
+        }
+
+        {/* MOBILE VIEW FIXES */}
+        @media (max-width: 576px) {
+          .product-img {
+            height: 180px;
+          }
+
+          .product-price {
+            font-size: 16px;
+          }
+        }
+      </style>
     </>
   );
 };
