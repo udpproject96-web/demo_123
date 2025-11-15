@@ -1,0 +1,11 @@
+@media (max-width: 576px) {
+  .footer {
+    .row {
+      .col {
+        margin: 10px 0;
+        text-align: center;
+        justify-content: center;
+      }
+    }
+  }
+}
